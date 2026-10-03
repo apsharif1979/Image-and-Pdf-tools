@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Pro Editor V2 - Image, PDF & Calculator Tools</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs" type="module"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0c0f17;--panel:#151b2b;--panel2:#1d263a;--line:#2a334b;--text:#eef2ff;--muted:#9aa7c2;--primary:#4f46e5;--primary2:#6366f1;--danger:#b83b65;--ok:#15956d}
+body{background:linear-gradient(145deg,#080b12,#141a2a);font-family:Segoe UI,Inter,system-ui,sans-serif;min-height:100vh;padding:20px;color:var(--text)}
+.app{max-width:1600px;margin:auto;background:rgba(12,16,26,.78);backdrop-filter:blur(8px);border-radius:30px;box-shadow:0 20px 50px #0008,0 0 0 1px #ffffff0b;overflow:hidden;padding:24px}
+.header{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;margin-bottom:18px}
+h1{font-size:1.8rem;background:linear-gradient(135deg,#fff,#a5b9ff);-webkit-background-clip:text;background-clip:text;color:transparent;display:flex;align-items:center;gap:12px}
+.header small{display:block;color:var(--muted);margin-top:5px}
+.btn-group,.tabs{display:flex;gap:9px;flex-wrap:wrap}
+.btn,.tab{border:0;border-radius:12px;padding:10px 15px;background:#242b3f;color:#eef2ff;cursor:pointer;font-weight:600;transition:.2s}
+.btn:hover,.tab:hover{background:#334155;transform:translateY(-1px)}
+.primary{background:var(--primary)}.primary:hover{background:var(--primary2)}
+.danger{background:#7c2d4c}.success{background:#126d55}
+.tabs{border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:20px}
+.tab.active{background:var(--primary);box-shadow:0 5px 16px #4f46e555}
+.tool{display:none}.tool.active{display:block}
+.editor-layout{display:flex;flex-wrap:wrap;gap:22px}
+.canvas-zone{flex:2;min-width:320px;background:#080b12;border-radius:25px;padding:20px;display:flex;flex-direction:column;align-items:center;gap:15px;box-shadow:inset 0 0 0 1px #2a2f44}
+.side{flex:1;min-width:280px;background:var(--panel);border-radius:22px;padding:20px}
+.drop{width:100%;border:2px dashed #3b4663;border-radius:20px;padding:32px;text-align:center;color:var(--muted);cursor:pointer}
+.drop i{font-size:40px;margin-bottom:12px;color:#7787b8}.drop:hover{border-color:#6674b4;background:#ffffff05}
+canvas{max-width:100%;border-radius:12px;background:#fff;display:block}
+.preview{min-height:300px;width:100%;display:flex;align-items:center;justify-content:center;overflow:auto}
+.controls{display:grid;gap:14px}.control{background:#1b2335;padding:12px;border-radius:13px}
+.control label{display:flex;justify-content:space-between;color:#cbd5e1;margin-bottom:7px;font-size:.9rem}
+input[type=range]{width:100%}
+.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:20px;margin-bottom:18px}
+.card h2{margin-bottom:8px}.muted{color:var(--muted)}
+input,select,textarea{width:100%;padding:11px;border-radius:10px;border:1px solid var(--line);background:#0d1320;color:var(--text);outline:none}
+input:focus,select:focus,textarea:focus{border-color:#6573bd}
+.file-list{display:grid;gap:8px;margin-top:12px}.file-item{display:flex;justify-content:space-between;gap:10px;padding:10px;background:#0d1320;border-radius:10px;color:#cbd5e1}
+.tool-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
+.calc{max-width:430px;margin:auto;background:#0a0e17;padding:18px;border-radius:22px}
+.calc-display{height:70px;background:#151d2e;border-radius:14px;margin-bottom:12px;padding:15px;text-align:right;font-size:2rem;overflow:auto}
+.calc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.calc-grid button{height:58px;border:0;border-radius:12px;background:#202a40;color:white;font-size:1.05rem;cursor:pointer}.calc-grid button:hover{background:#34415e}.calc-grid .op{background:#4f46e5}.calc-grid .danger{background:#7c2d4c}.wide{grid-column:span 2}
+.stat{font-size:1.8rem;font-weight:700;margin-top:7px}
+.notice{padding:12px;border-radius:12px;background:#151f34;color:#bdc8df;margin-top:12px}
+footer{text-align:center;color:#71809e;margin-top:22px;font-size:.85rem}
+@media(max-width:700px){body{padding:8px}.app{padding:14px;border-radius:20px}h1{font-size:1.35rem}.canvas-zone,.side{min-width:100%}.btn{padding:9px 11px}.card{padding:15px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="header">
+<div><h1><i class="fa-solid fa-wand-magic-sparkles"></i> Pro Editor V2</h1><small>Image editor • PDF tools • converters • calculator</small></div>
+<div class="btn-group">
+<button class="btn" onclick="document.getElementById('imageInput').click()"><i class="fa-solid fa-upload"></i> Open Image</button>
+<button class="btn primary" onclick="downloadImage()"><i class="fa-solid fa-download"></i> Export PNG</button>
+</div>
+</header>
+
+<nav class="tabs">
+<button class="tab active" data-tool="imageTool"><i class="fa-solid fa-image"></i> Image Editor</button>
+<button class="tab" data-tool="pdfTool"><i class="fa-solid fa-file-pdf"></i> PDF Tools</button>
+<button class="tab" data-tool="convertTool"><i class="fa-solid fa-arrows-rotate"></i> Converter</button>
+<button class="tab" data-tool="calcTool"><i class="fa-solid fa-calculator"></i> Calculator</button>
+<button class="tab" data-tool="utilityTool"><i class="fa-solid fa-toolbox"></i> Utilities</button>
+</nav>
+
+<section id="imageTool" class="tool active">
+<div class="editor-layout">
+<div class="canvas-zone">
+<input id="imageInput" type="file" accept="image/*" hidden>
+<div class="drop" id="imageDrop">
+<i class="fa-solid fa-cloud-arrow-up"></i><h3>Drop an image here</h3><p>or click to choose JPG, PNG, WEBP</p>
+</div>
+<div class="preview"><canvas id="canvas" width="900" height="600"></canvas></div>
+<div class="btn-group">
+<button class="btn" onclick="undo()"><i class="fa-solid fa-rotate-left"></i> Undo</button>
+<button class="btn" onclick="resetImage()"><i class="fa-solid fa-arrows-rotate"></i> Reset</button>
+<button class="btn primary" onclick="downloadImage()"><i class="fa-solid fa-download"></i> PNG</button>
+<button class="btn" onclick="downloadJPG()"><i class="fa-solid fa-file-image"></i> JPG</button>
+</div>
+</div>
+<aside class="side">
+<h2>Advanced Filters</h2><p class="muted">Adjust your image in real time.</p><br>
+<div class="controls">
+<div class="control"><label>Brightness <span id="brightnessVal">100%</span></label><input id="brightness" type="range" min="0" max="200" value="100"></div>
+<div class="control"><label>Contrast <span id="contrastVal">100%</span></label><input id="contrast" type="range" min="0" max="200" value="100"></div>
+<div class="control"><label>Saturation <span id="saturationVal">100%</span></label><input id="saturation" type="range" min="0" max="200" value="100"></div>
+<div class="control"><label>Blur <span id="blurVal">0px</span></label><input id="blur" type="range" min="0" max="12" value="0"></div>
+<div class="control"><label>Grayscale <span id="grayVal">0%</span></label><input id="grayscale" type="range" min="0" max="100" value="0"></div>
+<div class="control"><label>Sepia <span id="sepiaVal">0%</span></label><input id="sepia" type="range" min="0" max="100" value="0"></div>
+</div>
+<br>
+<div class="row">
+<button class="btn" onclick="rotate(-90)">↶ Rotate</button>
+<button class="btn" onclick="rotate(90)">↷ Rotate</button>
+<button class="btn" onclick="flip(true)">↔ Flip</button>
+<button class="btn" onclick="flip(false)">↕ Flip</button>
+</div>
+<div class="notice">Tip: filters are applied when you export the image. Your original image stays unchanged.</div>
+</aside>
+</div>
+</section>
+
+<section id="pdfTool" class="tool">
+<div class="tool-grid">
+<div class="card">
+<h2><i class="fa-solid fa-images"></i> Images → PDF</h2>
+<p class="muted">Select multiple JPG/PNG images and combine them into one PDF.</p><br>
+<input id="pdfImages" type="file" accept="image/*" multiple>
+<div id="pdfImageList" class="file-list"></div><br>
+<button class="btn primary" onclick="imagesToPDF()"><i class="fa-solid fa-file-pdf"></i> Create PDF</button>
+</div>
+<div class="card">
+<h2><i class="fa-solid fa-file-pdf"></i> PDF Preview</h2>
+<p class="muted">Load a PDF and render its first pages in your browser.</p><br>
+<input id="pdfInput" type="file" accept="application/pdf">
+<div id="pdfInfo" class="notice">No PDF selected.</div>
+<div id="pdfPreview" class="preview"></div>
+</div>
+</div>
+<div class="card">
+<h2>PDF Notes</h2>
+<p class="muted">The PDF tools in this standalone version process files locally in your browser. Advanced PDF editing, OCR and true PDF-to-Word conversion require additional browser libraries or a server-side engine.</p>
+</div>
+</section>
+
+<section id="convertTool" class="tool">
+<div class="tool-grid">
+<div class="card">
+<h2>Image Converter</h2><p class="muted">Convert an image to PNG, JPG or WEBP and resize it.</p><br>
+<input id="convertInput" type="file" accept="image/*"><br><br>
+<div class="row"><div><label>Width</label><input id="outW" type="number" placeholder="Original"></div><div><label>Height</label><input id="outH" type="number" placeholder="Original"></div></div><br>
+<select id="outFormat"><option value="image/png">PNG</option><option value="image/jpeg">JPG</option><option value="image/webp">WEBP</option></select><br><br>
+<button class="btn primary" onclick="convertImage()">Convert & Download</button>
+</div>
+<div class="card">
+<h2>Image Compressor</h2><p class="muted">Reduce JPG/WEBP file size using browser quality controls.</p><br>
+<input id="compressInput" type="file" accept="image/*"><br><br>
+<label>Quality: <span id="qualityVal">80%</span></label>
+<input id="quality" type="range" min="10" max="100" value="80" oninput="qualityVal.textContent=this.value+'%'"><br><br>
+<button class="btn primary" onclick="compressImage()">Compress & Download</button>
+</div>
+</div>
+</section>
+
+<section id="calcTool" class="tool">
+<div class="calc">
+<div id="display" class="calc-display">0</div>
+<div class="calc-grid">
+<button class="danger" onclick="calcClear()">AC</button><button onclick="calcBack()">⌫</button><button onclick="calcPercent()">%</button><button class="op" onclick="calcInput('/')">÷</button>
+<button onclick="calcInput('7')">7</button><button onclick="calcInput('8')">8</button><button onclick="calcInput('9')">9</button><button class="op" onclick="calcInput('*')">×</button>
+<button onclick="calcInput('4')">4</button><button onclick="calcInput('5')">5</button><button onclick="calcInput('6')">6</button><button class="op" onclick="calcInput('-')">−</button>
+<button onclick="calcInput('1')">1</button><button onclick="calcInput('2')">2</button><button onclick="calcInput('3')">3</button><button class="op" onclick="calcInput('+')">+</button>
+<button class="wide" onclick="calcInput('0')">0</button><button onclick="calcInput('.')">.</button><button class="op" onclick="calcEquals()">=</button>
+</div>
+</div>
+<div class="card" style="max-width:700px;margin:20px auto">
+<h2>Quick EMI Calculator</h2><br>
+<div class="row"><input id="loan" type="number" placeholder="Loan amount"><input id="rate" type="number" step=".01" placeholder="Annual interest %"><input id="months" type="number" placeholder="Months"></div><br>
+<button class="btn primary" onclick="emi()">Calculate EMI</button>
+<div id="emiResult" class="notice">Enter loan amount, interest and duration.</div>
+</div>
+</section>
+
+<section id="utilityTool" class="tool">
+<div class="tool-grid">
+<div class="card"><h2>Percentage Calculator</h2><br><input id="pctA" type="number" placeholder="Number"><br><br><input id="pctB" type="number" placeholder="Percentage"><br><br><button class="btn primary" onclick="percentage()">Calculate</button><div id="pctResult" class="notice">Result will appear here.</div></div>
+<div class="card"><h2>Text Counter</h2><br><textarea id="textCounter" rows="8" placeholder="Type or paste text..."></textarea><div id="textStats" class="notice">0 characters • 0 words</div></div>
+<div class="card"><h2>File Size Converter</h2><br><input id="sizeInput" type="number" placeholder="Enter value"><br><br><select id="sizeUnit"><option value="KB">KB</option><option value="MB">MB</option><option value="GB">GB</option></select><br><br><button class="btn primary" onclick="fileSize()">Convert to bytes</button><div id="sizeResult" class="notice">—</div></div>
+</div>
+</section>
+
+<footer>Pro Editor V2 • Browser-based tools • Files are processed locally where supported</footer>
+</div>
+
+<script>
+const canvas=document.getElementById('canvas'),ctx=canvas.getContext('2d');
+let img=null, original=null, rotation=0, flipX=1, flipY=1, history=[];
+const imageInput=document.getElementById('imageInput'), drop=document.getElementById('imageDrop');
+
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.tool').forEach(x=>x.classList.remove('active'));t.classList.add('active');document.getElementById(t.dataset.tool).classList.add('active')});
+drop.onclick=()=>imageInput.click();['dragover'].forEach(e=>drop.addEventListener(e,x=>{x.preventDefault();drop.style.borderColor='#6674b4'}));
+drop.addEventListener('drop',e=>{e.preventDefault();loadImage(e.dataTransfer.files[0]);});
+imageInput.onchange=e=>loadImage(e.target.files[0]);
+
+function loadImage(file){if(!file||!file.type.startsWith('image/'))return;const r=new FileReader();r.onload=e=>{const im=new Image();im.onload=()=>{img=im;original={src:e.target.result,w:im.width,h:im.height};history=[];rotation=0;flipX=flipY=1;resetControls(false);draw()};im.src=e.target.result};r.readAsDataURL(file)}
+function resetControls(drawNow=true){['brightness','contrast','saturation'].forEach(id=>document.getElementById(id).value=100);['blur','grayscale','sepia'].forEach(id=>document.getElementById(id).value=0);updateLabels();if(drawNow)draw()}
+function updateLabels(){['brightness','contrast','saturation'].forEach(id=>document.getElementById(id+'Val').textContent=document.getElementById(id).value+'%');document.getElementById('blurVal').textContent=blur.value+'px';document.getElementById('grayVal').textContent=grayscale.value+'%';document.getElementById('sepiaVal').textContent=sepia.value+'%'}
+document.querySelectorAll('#imageTool input[type=range]').forEach(x=>x.oninput=()=>{updateLabels();draw()});
+function draw(){if(!img)return;const rad=rotation*Math.PI/180, swap=Math.abs(rotation)%180===90;canvas.width=swap?img.height:img.width;canvas.height=swap?img.width:img.height;ctx.save();ctx.translate(canvas.width/2,canvas.height/2);ctx.rotate(rad);ctx.scale(flipX,flipY);ctx.filter=`brightness(${brightness.value}%) contrast(${contrast.value}%) saturate(${saturation.value}%) blur(${blur.value}px) grayscale(${grayscale.value}%) sepia(${sepia.value}%)`;ctx.drawImage(img,-img.width/2,-img.height/2);ctx.restore();ctx.filter='none'}
+function snapshot(){if(img)history.push(canvas.toDataURL('image/png'))}
+function rotate(deg){snapshot();rotation=(rotation+deg+360)%360;draw()}
+function flip(horizontal){snapshot();if(horizontal)flipX*=-1;else flipY*=-1;draw()}
+function undo(){if(!history.length)return;const src=history.pop(),im=new Image();im.onload=()=>{img=im;rotation=0;flipX=flipY=1;draw()};im.src=src}
+function resetImage(){if(!original)return;const im=new Image();im.onload=()=>{img=im;rotation=0;flipX=flipY=1;resetControls()};im.src=original.src}
+function downloadImage(){if(!img){alert('Please open an image first.');return}canvas.toBlob(b=>saveBlob(b,'pro-editor.png'),'image/png')}
+function downloadJPG(){if(!img){alert('Please open an image first.');return}canvas.toBlob(b=>saveBlob(b,'pro-editor.jpg'),'image/jpeg',.92)}
+function saveBlob(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+
+const pdfImages=document.getElementById('pdfImages');pdfImages.onchange=()=>{pdfImageList.innerHTML=[...pdfImages.files].map(f=>`<div class="file-item"><span>${escapeHTML(f.name)}</span><span>${(f.size/1024/1024).toFixed(2)} MB</span></div>`).join('')};
+function escapeHTML(s){return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+async function imagesToPDF(){if(!pdfImages.files.length)return alert('Select at least one image.');const {jsPDF}=window.jspdf;let pdf=null;for(const file of pdfImages.files){const data=await readData(file);const im=await imageFromData(data);const orient=im.width>im.height?'landscape':'portrait';if(!pdf)pdf=new jsPDF({orientation:orient,unit:'px',format:[im.width,im.height]});else pdf.addPage([im.width,im.height],orient);pdf.addImage(data,'JPEG',0,0,im.width,im.height,undefined,'FAST')}pdf.save('images-to-pdf.pdf')}
+function readData(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file)})}
+function imageFromData(src){return new Promise((res,rej)=>{const im=new Image();im.onload=()=>res(im);im.onerror=rej;im.src=src})}
+
+let pdfjsLib=null;
+(async()=>{try{pdfjsLib=await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs');pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs'}catch(e){console.warn('PDF preview unavailable',e)}})();
+document.getElementById('pdfInput').onchange=async e=>{const file=e.target.files[0];if(!file)return;pdfInfo.textContent=`${file.name} • ${(file.size/1024/1024).toFixed(2)} MB`;pdfPreview.innerHTML='';if(!pdfjsLib){pdfPreview.innerHTML='<div class="notice">PDF preview library could not load. Check your internet connection.</div>';return}try{const pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise;pdfInfo.textContent=`${file.name} • ${pdf.numPages} page(s) • ${(file.size/1024/1024).toFixed(2)} MB`;for(let n=1;n<=Math.min(pdf.numPages,3);n++){const page=await pdf.getPage(n),vp=page.getViewport({scale:1});const c=document.createElement('canvas');const scale=Math.min(1.5,700/vp.width);const v=page.getViewport({scale});c.width=v.width;c.height=v.height;await page.render({canvasContext:c.getContext('2d'),viewport:v}).promise;pdfPreview.appendChild(c)}}catch(err){pdfPreview.innerHTML='<div class="notice">Could not preview this PDF.</div>'}};
+
+function convertImage(){const f=convertInput.files[0];if(!f)return alert('Select an image.');const im=new Image();im.onload=()=>{const w=+outW.value||im.width,h=+outH.value||im.height,c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(im,0,0,w,h);c.toBlob(b=>saveBlob(b,'converted.'+(outFormat.value==='image/jpeg'?'jpg':outFormat.value.split('/')[1])),outFormat.value,.92)};im.src=URL.createObjectURL(f)}
+function compressImage(){const f=compressInput.files[0];if(!f)return alert('Select an image.');const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=im.width;c.height=im.height;c.getContext('2d').drawImage(im,0,0);c.toBlob(b=>saveBlob(b,'compressed.jpg'),'image/jpeg',quality.value/100)};im.src=URL.createObjectURL(f)}
+
+let expression='';
+function calcInput(v){expression+=v;display.textContent=expression}
+function calcClear(){expression='';display.textContent='0'}
+function calcBack(){expression=expression.slice(0,-1);display.textContent=expression||'0'}
+function calcPercent(){try{expression=String(Number(Function('"use strict";return ('+expression+')')())/100);display.textContent=expression}catch{}}
+function calcEquals(){try{if(!/^[0-9+\-*/().\s]+$/.test(expression))throw 0;const result=Function('"use strict";return ('+expression+')')();expression=String(Number.isFinite(result)?Number(result.toFixed(10)):result);display.textContent=expression}catch{display.textContent='Error';expression=''}}
+function emi(){const P=+loan.value,r=+rate.value/1200,n=+months.value;if(P<=0||n<=0)return emiResult.textContent='Enter valid values.';const m=r?P*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1):P/n;emiResult.innerHTML=`Monthly EMI: <b>${m.toFixed(2)}</b><br>Total payment: ${(m*n).toFixed(2)}<br>Total interest: ${(m*n-P).toFixed(2)}`}
+function percentage(){const a=+pctA.value,b=+pctB.value;if(isNaN(a)||isNaN(b))return;pctResult.textContent=`${b}% of ${a} = ${(a*b/100).toFixed(2)}`}
+textCounter.oninput=()=>{const s=textCounter.value;const words=s.trim()?s.trim().split(/\s+/).length:0;textStats.textContent=`${s.length} characters • ${words} words`}
+function fileSize(){const n=+sizeInput.value;if(isNaN(n))return;const u=sizeUnit.value,m=u==='KB'?1024:u==='MB'?1048576:1073741824;sizeResult.textContent=`${n} ${u} = ${(n*m).toLocaleString()} bytes`}
+updateLabels();
+</script>
+</body>
+</html>
