@@ -206,5 +206,384 @@ function saveListing(e){e.preventDefault();const item={id:Date.now(),type:$('lTy
 function sendContact(e){e.preventDefault();const name=$('cName').value.trim(),email=$('cEmail').value.trim(),phone=$('cPhone').value.trim(),subject=$('cSubject').value.trim(),message=$('cMessage').value.trim();const body=`Name: ${name}\nEmail: ${email}\nPhone/WhatsApp: ${phone}\n\nMessage:\n${message}`;window.location.href='mailto:contact@kroybikroy.online?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);toast('Opening your email app...')}
 window.addEventListener('click',e=>{if(e.target===$('listingModal'))closeListing()});
 </script>
+  <!-- =========================================================
+     KROYBIKROY ONLINE - WELCOME POPUP BANNER
+     Add this entire block just before </body>
+========================================================= -->
+
+<style>
+/* ===== KroyBikroy Popup Overlay ===== */
+.kb-popup-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.78);
+    backdrop-filter: blur(7px);
+    -webkit-backdrop-filter: blur(7px);
+}
+
+/* Show popup */
+.kb-popup-overlay.kb-popup-show {
+    display: flex;
+    animation: kbFadeIn 0.35s ease;
+}
+
+/* Popup box */
+.kb-popup-box {
+    position: relative;
+    width: min(1000px, 96vw);
+    max-height: 92vh;
+    overflow: auto;
+    background: #ffffff;
+    border-radius: 22px;
+    padding: 10px;
+    box-shadow:
+        0 30px 100px rgba(0, 0, 0, 0.55),
+        0 0 0 1px rgba(255,255,255,0.15);
+    animation: kbPopupIn 0.4s ease;
+}
+
+/* Banner link */
+.kb-popup-link {
+    display: block;
+    width: 100%;
+    cursor: pointer;
+    text-decoration: none;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+/* Banner image */
+.kb-popup-banner {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 78vh;
+    object-fit: contain;
+    border-radius: 16px;
+    transition: transform 0.3s ease;
+}
+
+/* Slight zoom on desktop hover */
+.kb-popup-link:hover .kb-popup-banner {
+    transform: scale(1.01);
+}
+
+/* Close button */
+.kb-popup-close {
+    position: absolute;
+    z-index: 10;
+    top: 16px;
+    right: 16px;
+
+    width: 42px;
+    height: 42px;
+
+    border: 0;
+    border-radius: 50%;
+
+    background: rgba(0, 0, 0, 0.75);
+    color: #ffffff;
+
+    font-size: 25px;
+    line-height: 42px;
+    text-align: center;
+
+    cursor: pointer;
+
+    box-shadow: 0 5px 18px rgba(0,0,0,0.3);
+
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease;
+}
+
+.kb-popup-close:hover {
+    background: #e00000;
+    transform: rotate(90deg) scale(1.08);
+}
+
+/* Bottom visit button */
+.kb-popup-action {
+    display: flex;
+    justify-content: center;
+    padding: 10px 8px 4px;
+}
+
+.kb-popup-action-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+
+    min-width: 240px;
+
+    padding: 12px 22px;
+
+    border-radius: 999px;
+
+    background: linear-gradient(
+        135deg,
+        #008f5a,
+        #00b86b
+    );
+
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 800;
+
+    text-decoration: none;
+
+    box-shadow:
+        0 8px 25px rgba(0, 160, 95, 0.3);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.kb-popup-action-button:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 12px 30px rgba(0, 160, 95, 0.4);
+}
+
+/* Small text */
+.kb-popup-note {
+    text-align: center;
+    margin: 4px 0 5px;
+    color: #667085;
+    font-size: 11px;
+}
+
+/* Animation */
+@keyframes kbFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes kbPopupIn {
+    from {
+        opacity: 0;
+        transform: scale(0.92) translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* ===== Mobile ===== */
+@media (max-width: 600px) {
+
+    .kb-popup-overlay {
+        padding: 10px;
+    }
+
+    .kb-popup-box {
+        width: 100%;
+        padding: 6px;
+        border-radius: 16px;
+    }
+
+    .kb-popup-banner {
+        border-radius: 12px;
+        max-height: 70vh;
+        object-fit: contain;
+    }
+
+    .kb-popup-close {
+        top: 10px;
+        right: 10px;
+
+        width: 36px;
+        height: 36px;
+
+        line-height: 36px;
+        font-size: 21px;
+    }
+
+    .kb-popup-action-button {
+        width: 100%;
+        min-width: 0;
+        font-size: 14px;
+        padding: 11px 15px;
+    }
+
+    .kb-popup-note {
+        font-size: 10px;
+    }
+}
+</style>
+
+
+<!-- =========================================================
+     POPUP HTML
+========================================================= -->
+
+<div
+    id="kbWelcomePopup"
+    class="kb-popup-overlay"
+    aria-hidden="true"
+    role="dialog"
+    aria-label="KroyBikroy Online"
+>
+
+    <div class="kb-popup-box">
+
+        <!-- Close -->
+        <button
+            type="button"
+            id="kbPopupClose"
+            class="kb-popup-close"
+            aria-label="Close popup"
+            title="Close"
+        >
+            ×
+        </button>
+
+
+        <!-- Clickable Banner -->
+        <a
+            href="https://kroybikroy.online"
+            class="kb-popup-link"
+            target="_blank"
+            rel="noopener"
+            aria-label="Visit KroyBikroy Online"
+        >
+
+            <img
+                src="assets/kroybikroy-banner.png"
+                alt="KroyBikroy Online - Bangladesh Marketplace and Online Services"
+                class="kb-popup-banner"
+            >
+
+        </a>
+
+
+        <!-- Visit Button -->
+        <div class="kb-popup-action">
+
+            <a
+                href="https://kroybikroy.online"
+                class="kb-popup-action-button"
+                target="_blank"
+                rel="noopener"
+            >
+                <i class="fa-solid fa-globe"></i>
+                Visit KroyBikroy.online
+            </a>
+
+        </div>
+
+
+        <div class="kb-popup-note">
+            Bangladesh's Online Marketplace & Service Portal
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     POPUP JAVASCRIPT
+========================================================= -->
+
+<script>
+(function () {
+
+    const popup = document.getElementById('kbWelcomePopup');
+    const closeButton = document.getElementById('kbPopupClose');
+
+    if (!popup || !closeButton) {
+        return;
+    }
+
+
+    /* Open popup */
+    function openKroyBikroyPopup() {
+
+        popup.classList.add('kb-popup-show');
+
+        popup.setAttribute('aria-hidden', 'false');
+
+        document.body.style.overflow = 'hidden';
+
+    }
+
+
+    /* Close popup */
+    function closeKroyBikroyPopup() {
+
+        popup.classList.remove('kb-popup-show');
+
+        popup.setAttribute('aria-hidden', 'true');
+
+        document.body.style.overflow = '';
+
+    }
+
+
+    /* Close button */
+    closeButton.addEventListener(
+        'click',
+        function () {
+            closeKroyBikroyPopup();
+        }
+    );
+
+
+    /* Click outside popup */
+    popup.addEventListener(
+        'click',
+        function (event) {
+
+            if (event.target === popup) {
+                closeKroyBikroyPopup();
+            }
+
+        }
+    );
+
+
+    /* ESC key */
+    document.addEventListener(
+        'keydown',
+        function (event) {
+
+            if (event.key === 'Escape') {
+                closeKroyBikroyPopup();
+            }
+
+        }
+    );
+
+
+    /* Open automatically after page loads */
+    window.addEventListener(
+        'load',
+        function () {
+
+            setTimeout(
+                function () {
+                    openKroyBikroyPopup();
+                },
+                1000
+            );
+
+        }
+    );
+
+})();
+</script>
 </body>
 </html>
