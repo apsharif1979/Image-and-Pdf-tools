@@ -206,6 +206,14 @@ function previewListingImage(){const f=$('lImage').files[0];listingImage='';if(!
 function saveListing(e){e.preventDefault();const item={id:Date.now(),type:$('lType').value,category:$('lCategory').value,title:$('lTitle').value.trim(),price:$('lPrice').value,location:$('lLocation').value.trim(),phone:$('lPhone').value.trim(),desc:$('lDesc').value.trim(),image:listingImage};const arr=getListings();arr.unshift(item);localStorage.setItem(LIST_KEY,JSON.stringify(arr));$('listingForm').reset();listingImage='';closeListing();renderListings();toast('Listing published on this browser.')}renderListings();
 function sendContact(e){e.preventDefault();const name=$('cName').value.trim(),email=$('cEmail').value.trim(),phone=$('cPhone').value.trim(),subject=$('cSubject').value.trim(),message=$('cMessage').value.trim();const body=`Name: ${name}\nEmail: ${email}\nPhone/WhatsApp: ${phone}\n\nMessage:\n${message}`;window.location.href='mailto:contact@kroybikroy.online?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);toast('Opening your email app...')}
 window.addEventListener('click',e=>{if(e.target===$('listingModal'))closeListing()});
+</script> 
+<!-- Pinterest Save Button -->
+<a href="https://www.pinterest.com/pin/create/button/"
+   data-pin-do="buttonBookmark">
+  Save to Pinterest
+</a>
+<script async defer
+  src="https://assets.pinterest.com/js/pinit.js">
 </script>
 </body>
 </html>
